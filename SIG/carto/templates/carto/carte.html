@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <title>Carte des Routes Nationales</title>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <style>
+        .popup-content {
+            font-family: Arial, sans-serif;
+            font-size: 14px;
+        }
+        .route-name {
+            font-weight: bold;
+            color: #2c5aa0;
+            margin-bottom: 5px;
+        }
+        .distance-info {
+            color: #666;
+        }
+    </style>
+</head>
+<body>
+    <h2>Carte des routes nationales</h2>
+    <div id="map" style="height: 600px;"></div>
+
+    <script>
+        // Centrer la carte sur Madagascar
+        const map = L.map('map').setView([-18.9, 47.5], 6);
+
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            attribution: '© OpenStreetMap contributors'
+        }).addTo(map);
+
+        // Charger les routes nationales depuis la vue Django (GeoJSON)
+        fetch("{% url 'geojson_routes' %}")
+            .then(response => response.json())
+            .then(data => {
+                L.geoJSON(data, {
+                    style: function(feature) {
+                        // Couleurs différentes selon le type de route
+                        let color = 'blue';
+                        if (feature.properties.ref) {
+                            if (feature.properties.ref.includes('N ')) {
+                                color = '#d32f2f'; // Rouge pour routes nationales
+                            } else if (feature.properties.ref.includes('T ')) {
+                                color = '#f57c00'; // Orange pour routes provinciales
+                            }
+                        }
+
+                        return {
+                            color: color,
+                            weight: 3,
+                            opacity: 0.8
+                        };
+                    },
+                    onEachFeature: (feature, layer) => {
+                        const props = feature.properties;
+                        const nom = props.name || props.ref || 'Route';
+                        const distSegment = props.longueur_segment_km;
+                        const distTotale = props.longueur_totale_km;
+
+                        // Créer le contenu du popup
+                        let popupContent = `<div class="popup-content">`;
+                        popupContent += `<div class="route-name">${nom}</div>`;
+
+                        if (props.ref && distTotale > distSegment) {
+                            // Route avec plusieurs segments
+                            popupContent += `<div class="distance-info">`;
+                            popupContent += `📏 Ce segment : <strong>${distSegment} km</strong><br>`;
+                            popupContent += `🛣️ Route complète : <strong>${distTotale} km</strong>`;
+                            popupContent += `</div>`;
+                        } else {
+                            // Route simple ou segment unique
+                            popupContent += `<div class="distance-info">`;
+                            popupContent += `📏 Longueur : <strong>${distSegment || distTotale} km</strong>`;
+                            popupContent += `</div>`;
+                        }
+
+                        if (props.fclass) {
+                            popupContent += `<div style="color: #888; font-size: 12px; margin-top: 5px;">`;
+                            popupContent += `Type : ${props.fclass}`;
+                            popupContent += `</div>`;
+                        }
+
+                        popupContent += `</div>`;
+
+                        layer.bindPopup(popupContent);
+                    }
+                }).addTo(map);
+            })
+            .catch(error => {
+                console.error('Erreur lors du chargement des données:', error);
+            });
+    </script>
+</body>
+</html>
