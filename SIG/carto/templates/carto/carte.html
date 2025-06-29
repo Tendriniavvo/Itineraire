@@ -6,25 +6,226 @@
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     <style>
+        body {
+            margin: 0;
+            font-family: 'Segoe UI', Arial, sans-serif;
+            background: linear-gradient(120deg, #f6ede3 0%, #f9f6f2 100%);
+            min-height: 100vh;
+        }
+        .sidebar {
+            position: fixed;
+            left: 32px;
+            top: 40px;
+            width: 320px;
+            min-height: 320px;
+            max-height: 80vh;
+            background: #fff;
+            color: #4e3b1f;
+            border-radius: 22px;
+            box-shadow: 0 8px 32px 0 rgba(191,160,116,0.18), 0 1.5px 8px 0 rgba(191,160,116,0.10);
+            z-index: 1100;
+            padding: 32px 26px 22px 26px;
+            display: flex;
+            flex-direction: column;
+            transition: left 0.3s, box-shadow 0.3s, opacity 0.3s;
+            opacity: 1;
+            background-clip: padding-box;
+        }
+        .sidebar.hide {
+            left: -370px;
+            opacity: 0;
+            pointer-events: none;
+        }
+        .sidebar h2 {
+            margin-top: 0;
+            font-size: 1.6em;
+            letter-spacing: 1px;
+            font-weight: 700;
+            margin-bottom: 0.7em;
+            color: #a67c52;
+        }
+        .sidebar label {
+            font-size: 1.07em;
+            margin-bottom: 0.5em;
+            display: block;
+            font-weight: 500;
+            letter-spacing: 0.5px;
+            color: #a67c52;
+        }
+        .sidebar select {
+            width: 100%;
+            padding: 10px 12px;
+            border-radius: 7px;
+            border: 1.5px solid #e7dac7;
+            margin-bottom: 1.5em;
+            font-size: 1.08em;
+            background: #f9f6f2;
+            color: #6d4c1b;
+            font-weight: 500;
+            box-shadow: 0 1px 4px rgba(191,160,116,0.10);
+            transition: box-shadow 0.2s;
+        }
+            
+
+        .sidebar select:focus {
+            outline: none;
+            box-shadow: 0 0 0 2px #a67c52;
+        }
+        .sidebar .infos-rn {
+            background: #fff8ee;
+            color: #6d4c1b;
+            border-radius: 12px;
+            padding: 18px 18px 12px 18px;
+            margin-top: 10px;
+            box-shadow: 0 2px 16px rgba(191,160,116,0.13);
+            font-size: 1.07em;
+            min-height: 80px;
+            transition: box-shadow 0.2s;
+        }
+        .sidebar .infos-rn .titre {
+            font-weight: bold;
+            font-size: 1.18em;
+            margin-bottom: 10px;
+            color: #a67c52;
+        }
+        .sidebar .infos-rn div {
+            margin-bottom: 6px;
+        }
+        .sidebar::-webkit-scrollbar {
+            width: 8px;
+            background: #fff;
+        }
+        .sidebar::-webkit-scrollbar-thumb {
+            background: #e7dac7;
+            border-radius: 4px;
+        }
+        #sidebar-toggle {
+            position: fixed;
+            left: 32px;
+            top: 16px;
+            z-index: 1200;
+            background: #fff;
+            color: #a67c52;
+            border: none;
+            border-radius: 50%;
+            width: 44px;
+            height: 44px;
+            box-shadow: 0 2px 8px rgba(191,160,116,0.13);
+            cursor: pointer;
+            font-size: 1.7em;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: left 0.3s, background 0.2s;
+        }
+        .sidebar.hide + #sidebar-toggle {
+            left: 16px;
+        }
+        #map-container {
+            margin-left: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            background: transparent;
+        }
+        #map {
+            width: 92vw;
+            max-width: 1400px;
+            height: 90vh;
+            min-height: 600px;
+            border-radius: 28px;
+            box-shadow: 0 8px 32px 0 rgba(191,160,116,0.18), 0 1.5px 8px 0 rgba(191,160,116,0.10);
+            border: 3px solid #e7dac7;
+            background: #fff;
+            transition: box-shadow 0.2s, border 0.2s;
+        }
+        .leaflet-popup-content-wrapper {
+            border-radius: 12px;
+            box-shadow: 0 2px 12px rgba(191,160,116,0.13);
+        }
         .popup-content {
-            font-family: Arial, sans-serif;
-            font-size: 14px;
+            font-family: 'Segoe UI', Arial, sans-serif;
+            font-size: 16px;
         }
         .route-name {
             font-weight: bold;
-            color: #2c5aa0;
+            color: #a67c52;
             margin-bottom: 5px;
+            font-size: 1.13em;
         }
         .distance-info {
-            color: #666;
+            color: #6d4c1b;
+            margin-bottom: 3px;
+        }
+        @media (max-width: 900px) {
+            .sidebar, #sidebar-toggle {
+                left: 0 !important;
+                top: 0 !important;
+                border-radius: 0 0 18px 18px !important;
+            }
+            .sidebar {
+                width: 100vw;
+                height: auto;
+                position: fixed;
+                box-shadow: 0 2px 16px rgba(191,160,116,0.13);
+                max-height: 60vh;
+                min-height: unset;
+                padding: 18px 10px 10px 10px;
+            }
+            #map-container {
+                margin-left: 0;
+                height: 80vh;
+            }
+            #map {
+                width: 98vw;
+                min-height: 400px;
+                height: 60vh;
+                border-radius: 12px;
+            }
         }
     </style>
 </head>
 <body>
-    <h2>Carte des routes nationales</h2>
-    <div id="map" style="height: 600px;"></div>
-
+    <div class="sidebar" id="sidebar">
+        <h2>Carte des routes nationales</h2>
+        <label for="select-rn">Choisissez une route nationale :</label>
+        <select id="select-rn">
+            <option value="">-- Sélectionner une RN --</option>
+        </select>
+        <button id="reset-map" style="
+            margin-bottom: 1em;
+            padding: 8px 18px;
+            border-radius: 7px;
+            border: none;
+            background: #a67c52;
+            color: #fff;
+            font-size: 1em;
+            font-weight: 500;
+            box-shadow: 0 1px 4px rgba(191,160,116,0.10);
+            cursor: pointer;
+            transition: background 0.2s;
+        ">Réinitialiser la carte</button>
+        <div id="infos-rn" class="infos-rn" style="display:none;"></div>
+    </div>
+    <button id="sidebar-toggle" title="Afficher/masquer le menu">&#9776;</button>
+    <div id="map-container">
+        <div id="map"></div>
+    </div>
     <script>
+        const sidebar = document.getElementById('sidebar');
+        const sidebarToggle = document.getElementById('sidebar-toggle');
+        let sidebarVisible = true;
+
+        sidebarToggle.addEventListener('click', function() {
+            sidebarVisible = !sidebarVisible;
+            if (sidebarVisible) {
+                sidebar.classList.remove('hide');
+            } else {
+                sidebar.classList.add('hide');
+            }
+        });
+
         // Centrer la carte sur Madagascar
         const map = L.map('map').setView([-18.9, 47.5], 6);
 
@@ -32,62 +233,124 @@
             attribution: '© OpenStreetMap contributors'
         }).addTo(map);
 
+        let rnLayers = {}; // { ref: [layer, ...] }
+        let rnInfos = {};  // { ref: {infos globales} }
+        let selectedRef = null;
+
+        // Réinitialiser la carte (vue générale)
+        function resetMapView() {
+            // Réinitialiser couleurs
+            Object.keys(rnLayers).forEach(r => {
+                rnLayers[r].forEach(layer => {
+                    layer.setStyle({color: '#a67c52', weight: 3, opacity: 0.85});
+                });
+            });
+            // Réinitialiser zoom
+            map.setView([-18.9, 47.5], 6);
+            // Réinitialiser select
+            document.getElementById('select-rn').value = "";
+            // Cacher infos
+            document.getElementById('infos-rn').style.display = "none";
+            selectedRef = null;
+        }
+
+        document.getElementById('reset-map').addEventListener('click', resetMapView);
+
         // Charger les routes nationales depuis la vue Django (GeoJSON)
         fetch("{% url 'geojson_routes' %}")
             .then(response => response.json())
             .then(data => {
+                // Construire la liste des RN uniques
+                const select = document.getElementById('select-rn');
+                const refsSet = new Set();
+                data.features.forEach(f => {
+                    if (f.properties.ref) refsSet.add(f.properties.ref);
+                });
+                const refs = Array.from(refsSet).sort();
+                refs.forEach(ref => {
+                    const opt = document.createElement('option');
+                    opt.value = ref;
+                    opt.textContent = ref;
+                    select.appendChild(opt);
+                });
+
+                // Grouper les layers par RN
                 L.geoJSON(data, {
                     style: function(feature) {
-                        // Couleurs différentes selon le type de route
-                        let color = 'blue';
-                        if (feature.properties.ref) {
-                            if (feature.properties.ref.includes('N ')) {
-                                color = '#d32f2f'; // Rouge pour routes nationales
-                            } else if (feature.properties.ref.includes('T ')) {
-                                color = '#f57c00'; // Orange pour routes provinciales
-                            }
-                        }
-
+                        // Couleur par défaut
                         return {
-                            color: color,
+                            color: '#a67c52', // marron clair
                             weight: 3,
-                            opacity: 0.8
+                            opacity: 0.85
                         };
                     },
                     onEachFeature: (feature, layer) => {
                         const props = feature.properties;
-                        const nom = props.name || props.ref || 'Route';
-                        const distSegment = props.longueur_segment_km;
-                        const distTotale = props.longueur_totale_km;
+                        const ref = props.ref;
+                        if (!rnLayers[ref]) rnLayers[ref] = [];
+                        rnLayers[ref].push(layer);
 
-                        // Créer le contenu du popup
+                        // Stocker les infos globales (une seule fois par ref)
+                        if (!rnInfos[ref]) {
+                            rnInfos[ref] = {
+                                name: props.name,
+                                ref: props.ref,
+                                longueur_totale_km: props.longueur_totale_km,
+                                duree_totale_formatee: props.duree_totale_formatee,
+                                fclass: props.fclass
+                            };
+                        }
+
+                        // Popup classique
                         let popupContent = `<div class="popup-content">`;
-                        popupContent += `<div class="route-name">${nom}</div>`;
-
-                        if (props.ref && distTotale > distSegment) {
-                            // Route avec plusieurs segments
-                            popupContent += `<div class="distance-info">`;
-                            popupContent += `📏 Ce segment : <strong>${distSegment} km</strong><br>`;
-                            popupContent += `🛣️ Route complète : <strong>${distTotale} km</strong>`;
-                            popupContent += `</div>`;
-                        } else {
-                            // Route simple ou segment unique
-                            popupContent += `<div class="distance-info">`;
-                            popupContent += `📏 Longueur : <strong>${distSegment || distTotale} km</strong>`;
-                            popupContent += `</div>`;
+                        popupContent += `<div class="route-name">${props.ref}${props.name ? ' - ' + props.name : ''}</div>`;
+                        popupContent += `<div class="distance-info">🛣️ Longueur totale : <strong>${props.longueur_totale_km} km</strong></div>`;
+                        if (props.duree_totale_formatee) {
+                            popupContent += `<div class="distance-info">🕒 Durée estimée : <strong>${props.duree_totale_formatee}</strong></div>`;
                         }
-
                         if (props.fclass) {
-                            popupContent += `<div style="color: #888; font-size: 12px; margin-top: 5px;">`;
-                            popupContent += `Type : ${props.fclass}`;
-                            popupContent += `</div>`;
+                            popupContent += `<div style="color: #bfa074; font-size: 12px; margin-top: 5px;">Type : ${props.fclass}</div>`;
                         }
-
                         popupContent += `</div>`;
-
                         layer.bindPopup(popupContent);
                     }
                 }).addTo(map);
+
+                // Sélection d'une RN dans la liste
+                select.addEventListener('change', function() {
+                    const ref = this.value;
+                    // Réinitialiser toutes les couleurs
+                    Object.keys(rnLayers).forEach(r => {
+                        rnLayers[r].forEach(layer => {
+                            layer.setStyle({color: '#a67c52', weight: 3, opacity: 0.85});
+                        });
+                    });
+                    document.getElementById('infos-rn').style.display = "none";
+                    if (!ref) {
+                        selectedRef = null;
+                        return;
+                    }
+                    selectedRef = ref;
+                    // Mettre en surbrillance la RN sélectionnée
+                    rnLayers[ref].forEach(layer => {
+                        layer.setStyle({color: '#6d4c1b', weight: 5, opacity: 1});
+                    });
+                    // Zoom sur la RN sélectionnée
+                    const group = L.featureGroup(rnLayers[ref]);
+                    map.fitBounds(group.getBounds(), {maxZoom: 12});
+                    // Afficher les infos globales dans le sidebar
+                    const infos = rnInfos[ref];
+                    let html = `<div class="titre">${infos.ref}${infos.name ? ' - ' + infos.name : ''}</div>`;
+                    html += `<div>🛣️ Longueur totale : <strong>${infos.longueur_totale_km} km</strong></div>`;
+                    if (infos.duree_totale_formatee) {
+                        html += `<div>🕒 Durée estimée : <strong>${infos.duree_totale_formatee}</strong></div>`;
+                    }
+                    if (infos.fclass) {
+                        html += `<div style="color: #bfa074; font-size: 12px; margin-top: 5px;">Type : ${infos.fclass}</div>`;
+                    }
+                    document.getElementById('infos-rn').innerHTML = html;
+                    document.getElementById('infos-rn').style.display = "block";
+                });
             })
             .catch(error => {
                 console.error('Erreur lors du chargement des données:', error);

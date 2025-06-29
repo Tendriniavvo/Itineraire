@@ -14,7 +14,8 @@ class RouteNationale(models.Model):
     bridge = models.CharField(max_length=255, null=True)
     tunnel = models.CharField(max_length=255, null=True)
     geom = models.MultiLineStringField(srid=4326)
-    longueur_km = models.FloatField(null=True, blank=True)  # Ajouter cette ligne
+    longueur_km = models.FloatField(null=True, blank=True)
+    etat = models.CharField(max_length=50, null=True)
 
     class Meta:
         managed = False
